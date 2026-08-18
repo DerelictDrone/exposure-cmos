@@ -156,7 +156,9 @@ public class CmosCameraItem extends CameraItem {
             }
             Double res_double = res_cooldown.doubleValue();
             Double size_double = size.doubleValue();
-            cd *= (size_double*size_double)/(res_double*res_double);
+            if (res_double != 0) {
+                cd *= (size_double*size_double)/(res_double*res_double);
+            }
             if (isBnW) {
                 cd *= bw_cooldown;
             }
