@@ -4,6 +4,7 @@ import de.saschat.cmos.ExposureComputerMod;
 import de.saschat.cmos.blocks.tiles.WirelessReceiverTile;
 import de.saschat.cmos.registry.ComponentRegistry;
 import de.saschat.cmos.util.Location;
+import de.saschat.cmos.*;
 import io.github.mortuusars.exposure.data.ColorPalettes;
 import io.github.mortuusars.exposure.server.CameraInstances;
 import io.github.mortuusars.exposure.world.camera.CameraId;
@@ -94,12 +95,12 @@ public class CmosCameraItem extends CameraItem {
     }
 
     protected @NotNull List<Attachment<?>> defineAttachments() {
-        return List.of();
+        return List.of(Attachment.FLASH, Attachment.LENS, Attachment.FILTER);
     }
-
+    
     @Override
     public boolean hasAttachmentsMenu() {
-        return false;
+        return true;
     }
 
     private static ResourceLocation cc = ResourceLocation.fromNamespaceAndPath(ExposureComputerMod.MOD_ID, "cmos_camera");
