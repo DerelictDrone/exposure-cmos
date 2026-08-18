@@ -332,6 +332,27 @@ public class StandControllerPeripheral implements IPeripheral {
         }
         return false;
     }
+
+    @LuaFunction
+    public final Double getCooldown() {
+        CameraStandEntity standEntity = tile.getStandEntity();
+        if (standEntity != null && !standEntity.getCamera().isEmpty()) {
+            if (!(standEntity.getCamera().getItem() instanceof CmosCameraItem)) {return -1d;}
+            ItemStack stack = standEntity.getCamera();
+            CmosCameraItem camera = (CmosCameraItem)stack.getItem();
+            String exposureId = ExposureIdentifier.createId("testing");
+            CameraId cameraId = camera.getOrCreateId(stack);
+            // the minimum I could get away with here
+            CaptureParameters captureParameters = new CaptureParameters.Builder(exposureId)
+            .setCameraID(cameraId)
+            .setCropFactor(camera.getCropFactor())
+            .setFilmProperties(camera.getFilmProperties(stack))
+            .build();
+            return (double)camera.calculateCooldownAfterShot(stack,captureParameters);
+        }
+        return -1d;
+    }
+
     @LuaFunction
     public final boolean setFilmProperties(IArguments arg) throws LuaException {
         CameraStandEntity standEntity = tile.getStandEntity();

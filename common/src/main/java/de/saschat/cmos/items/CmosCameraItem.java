@@ -33,6 +33,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -133,7 +134,37 @@ public class CmosCameraItem extends CameraItem {
 
     @Override
     public int calculateCooldownAfterShot(ItemStack stack, CaptureParameters captureParameters) {
-        return 100;
+        Double cd = Config.Server.CMOS_CAMERA_COOLDOWN.get();
+        if (Config.Server.CMOS_CAMERA_DO_COOLDOWN_MODIFIERS.get()) {
+            Integer res_cooldown = Config.Server.COOLDOWN_RESOLUTION.get();
+            Double bw_cooldown = Config.Server.COOLDOWN_BW.get();
+            Double silent_cooldown = Config.Server.COOLDOWN_SILENT.get();
+            boolean isBnW;
+            Integer size;
+            try {
+                Field f = CaptureParameters.class.getDeclaredField("filmProperties");
+                f.setAccessible(true);
+                FilmProperties fp = (FilmProperties)f.get(captureParameters);
+                size = fp.getSize();
+                Field f2 = FilmProperties.class.getDeclaredField("type");
+                f2.setAccessible(true);
+                ExposureType et = (ExposureType)f2.get(fp);
+                isBnW = et.getSerializedName() == "black_and_white";
+            } catch(Exception e) {
+                size = filmProperties.getSize();
+                isBnW = false; // cannot be determined without extracting from fp so take the safer route
+            }
+            Double res_double = res_cooldown.doubleValue();
+            Double size_double = size.doubleValue();
+            cd *= (size_double*size_double)/(res_double*res_double);
+            if (isBnW) {
+                cd *= bw_cooldown;
+            }
+            if (stack.getEntityRepresentation().isSilent()) {
+                cd *= silent_cooldown;
+            }
+        }
+        return cd.intValue();
     }
 
     @Override
