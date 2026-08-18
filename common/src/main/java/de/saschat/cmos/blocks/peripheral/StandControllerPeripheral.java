@@ -313,6 +313,25 @@ public class StandControllerPeripheral implements IPeripheral {
             computer.queueEvent("stand_controller_rotation", computer.getAttachmentName(), yRot % 360, xRot);
         }
     }
+
+    @LuaFunction
+    public final boolean getMute() {
+        CameraStandEntity standEntity = tile.getStandEntity();
+        if (standEntity != null && !standEntity.getCamera().isEmpty()) {
+            return standEntity.isSilent();
+        }
+        return false;
+    }
+
+    @LuaFunction
+    public final boolean setMute(boolean mute) {
+        CameraStandEntity standEntity = tile.getStandEntity();
+        if (standEntity != null && !standEntity.getCamera().isEmpty()) {
+            standEntity.setSilent(mute);
+            return true;
+        }
+        return false;
+    }
     @LuaFunction
     public final boolean setFilmProperties(IArguments arg) throws LuaException {
         CameraStandEntity standEntity = tile.getStandEntity();
