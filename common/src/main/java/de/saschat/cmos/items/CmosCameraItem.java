@@ -38,6 +38,8 @@ import java.util.Optional;
 
 public class CmosCameraItem extends CameraItem {
 
+    public FilmProperties filmProperties;
+
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
@@ -84,14 +86,15 @@ public class CmosCameraItem extends CameraItem {
         return InteractionResult.FAIL;
     }
 
+    private static FilmProperties fp = new FilmProperties(ExposureType.COLOR, Optional.of(128), ColorPalettes.DEFAULT, DitherMode.CLEAN, FilmStyle.EMPTY);
     public CmosCameraItem(Properties properties) {
         super(properties);
+        this.filmProperties = fp;
     }
 
-    private static FilmProperties fp = new FilmProperties(ExposureType.COLOR, Optional.of(128), ColorPalettes.DEFAULT, DitherMode.CLEAN, FilmStyle.EMPTY);
     @Override
     public @NotNull FilmProperties getFilmProperties(ItemStack stack) {
-        return fp;
+        return this.filmProperties;
     }
 
     protected @NotNull List<Attachment<?>> defineAttachments() {
