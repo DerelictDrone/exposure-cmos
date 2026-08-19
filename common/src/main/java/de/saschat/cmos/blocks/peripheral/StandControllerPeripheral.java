@@ -9,9 +9,12 @@ import de.saschat.cmos.mixin.duck.CameraStandEntityDuck;
 import de.saschat.cmos.items.*;
 import io.github.mortuusars.exposure.world.camera.*;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.*;
 
+
+import io.github.mortuusars.exposure.*;
 import io.github.mortuusars.exposure.data.*;
 import io.github.mortuusars.exposure.util.color.Color;
 import io.github.mortuusars.exposure.server.CameraInstances;
@@ -38,6 +41,8 @@ import io.github.mortuusars.exposure.world.item.camera.CameraItem;
 import io.github.mortuusars.exposure.world.item.camera.CameraSettings;
 import io.github.mortuusars.exposure.world.item.camera.ShutterState;
 import net.minecraft.core.Direction;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.Holder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -331,6 +336,44 @@ public class StandControllerPeripheral implements IPeripheral {
     }
 
     @LuaFunction
+    public final Map<Object,Object> getPalettes() {
+        Set<ResourceLocation> keys = ((ServerLevel)tile.getLevel()).registryAccess().registryOrThrow(Exposure.Registries.COLOR_PALETTE).keySet();
+        Map<Object,Object> retvalue = new HashMap();
+        int index = 1;
+        Iterator<ResourceLocation> iter = keys.iterator();
+        while(iter.hasNext()) {
+            retvalue.put(index++,iter.next().toString());
+        }
+        return retvalue;
+    }
+
+    @LuaFunction
+    public final Map<Object,Object> dumpPalette(String paletteName) throws LuaException {
+        RegistryAccess ra = ((ServerLevel)tile.getLevel()).registryAccess();
+        ResourceKey<ColorPalette> rk = ResourceKey.create(Exposure.Registries.COLOR_PALETTE,ResourceLocation.parse(paletteName));
+        Holder<ColorPalette> holder = ColorPalettes.get(ra,rk);
+        ColorPalette palette = holder.value();
+        Map<Object,Object> retvalue = new HashMap();
+        int index = 1;
+        // Iterator<ResourceLocation> iter = keys.iterator();
+        int AMask = 255 << 24;
+        int RMask = 255 << 16;
+        int GMask = 255 << 8;
+        int BMask = 255;
+        for(int i = 0; i < 255; i++) {
+            long color = (long)palette.byId(i);
+            Map<Object, Object> colormap = new HashMap();
+            colormap.put("a",((color & AMask) >> 24) & 0xFF);
+            colormap.put("r",(color & RMask) >> 16);
+            colormap.put("g",(color & GMask) >> 8);
+            colormap.put("b",(color & BMask));
+            retvalue.put(i+1,colormap);
+        }
+        return retvalue;
+    }
+
+
+    @LuaFunction
     public final Double getCooldown() {
         CameraStandEntity standEntity = tile.getStandEntity();
         if (standEntity != null && !standEntity.getCamera().isEmpty()) {
@@ -377,6 +420,7 @@ public class StandControllerPeripheral implements IPeripheral {
             }
             Object type = newFilmProperties.get("exposureType");
             Object size = newFilmProperties.get("size");
+            Object colorPalette = newFilmProperties.get("colorPalette");
             Object style = newFilmProperties.get("filmStyle");
 
             if (size != null) {
@@ -384,6 +428,12 @@ public class StandControllerPeripheral implements IPeripheral {
                     throw(new LuaException("size is declared in new film properties but is not a number."));
                 }
                 fp = fp.withSize(((Double)size).intValue());
+            }
+            if (colorPalette != null) {
+                if (!(colorPalette instanceof String)) {
+                    throw(new LuaException("colorPalette is declared in new film properties but is not a string."));
+                }
+                fp = fp.withColorPalette(ResourceKey.create(Exposure.Registries.COLOR_PALETTE, ResourceLocation.parse((String)colorPalette)));
             }
             if (type != null) {
                 ObjectLuaTable exposureType = new ObjectLuaTable((Map<Object,Object>)type);
@@ -696,7 +746,6 @@ public class StandControllerPeripheral implements IPeripheral {
                 fstyle = (FilmStyle)f.get(fp);
             } catch(Exception e) {
                 fstyle = null;
-                retvalue.put("fstyle_err",e.toString());
             };
             try {
                 Field f = FilmProperties.class.getDeclaredField("type");
@@ -704,7 +753,6 @@ public class StandControllerPeripheral implements IPeripheral {
                 etype = (ExposureType)f.get(fp);
             } catch(Exception e) {
                 etype = null;
-                retvalue.put("etype_err",e.toString());
             };
 
             retvalue.put("size",fp.getSize());
@@ -712,7 +760,11 @@ public class StandControllerPeripheral implements IPeripheral {
                 {
                     Field f = FilmProperties.class.getDeclaredField("colorPalette");
                     f.setAccessible(true);
-                    retvalue.put("colorPalette",((ResourceKey<ColorPalette>)(f.get(fp))).toString());
+                    Field f2 = ResourceKey.class.getDeclaredField("location");
+                    f2.setAccessible(true);
+                    ResourceKey<ColorPalette> rk = (ResourceKey<ColorPalette>)f.get(fp);
+                    ResourceLocation rl = (ResourceLocation)f2.get(rk);
+                    retvalue.put("colorPalette",rl.toString());
                 }
                 {
                     Field f = FilmProperties.class.getDeclaredField("ditherMode");
