@@ -359,8 +359,9 @@ public class StandControllerPeripheral implements IPeripheral {
         ObjectLuaTable newFilmProperties = new ObjectLuaTable(arg.getTable(0));
         if (standEntity != null && !standEntity.getCamera().isEmpty() && standEntity.getCamera().getItem() instanceof CmosCameraItem item) {
             closeCamera();
-            CmosCameraItem cam = (CmosCameraItem)standEntity.getCamera().getItem();
-            FilmProperties fp = cam.getFilmProperties(standEntity.getCamera());
+            ItemStack stack = standEntity.getCamera();
+            CmosCameraItem cam = (CmosCameraItem)stack.getItem();
+            FilmProperties fp = cam.getFilmProperties(stack);
             ExposureType curExposureType;
             try {
                 Field f = FilmProperties.class.getDeclaredField("type");
@@ -713,7 +714,8 @@ public class StandControllerPeripheral implements IPeripheral {
                 }
                 fp = fp.withStyle(newFilmStyle);
             }
-            cam.filmProperties = fp;
+
+            cam.setFilmProperties(stack,fp);
             // size (optional int)
 
             // colorPalette (resource key, this is a non fucking starter un fucking fortunately)

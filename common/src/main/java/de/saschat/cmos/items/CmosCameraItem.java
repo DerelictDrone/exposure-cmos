@@ -1,6 +1,7 @@
 package de.saschat.cmos.items;
 
 import de.saschat.cmos.ExposureComputerMod;
+import de.saschat.cmos.registry.ComponentRegistry;
 import de.saschat.cmos.blocks.tiles.WirelessReceiverTile;
 import de.saschat.cmos.registry.ComponentRegistry;
 import de.saschat.cmos.util.Location;
@@ -38,8 +39,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class CmosCameraItem extends CameraItem {
-
-    public FilmProperties filmProperties;
 
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
@@ -87,15 +86,21 @@ public class CmosCameraItem extends CameraItem {
         return InteractionResult.FAIL;
     }
 
-    private static FilmProperties fp = new FilmProperties(ExposureType.COLOR, Optional.of(128), ColorPalettes.DEFAULT, DitherMode.CLEAN, FilmStyle.EMPTY);
+    private static FilmProperties defaultFilmProperties = new FilmProperties(ExposureType.COLOR, Optional.of(128), ColorPalettes.DEFAULT, DitherMode.CLEAN, FilmStyle.EMPTY);
     public CmosCameraItem(Properties properties) {
         super(properties);
-        this.filmProperties = fp;
     }
 
     @Override
     public @NotNull FilmProperties getFilmProperties(ItemStack stack) {
-        return this.filmProperties;
+        if(!stack.has(ComponentRegistry.FILM_PROPERTIES.get())) {
+            stack.set(ComponentRegistry.FILM_PROPERTIES.get(),defaultFilmProperties);
+        }
+        return stack.get(ComponentRegistry.FILM_PROPERTIES.get());
+    }
+
+    public void setFilmProperties(ItemStack stack, FilmProperties fp) {
+        stack.set(ComponentRegistry.FILM_PROPERTIES.get(),fp);
     }
 
     protected @NotNull List<Attachment<?>> defineAttachments() {
@@ -141,6 +146,7 @@ public class CmosCameraItem extends CameraItem {
             Double silent_cooldown = Config.Server.COOLDOWN_SILENT.get();
             boolean isBnW;
             Integer size;
+            FilmProperties filmProperties = getFilmProperties(stack);
             try {
                 Field f = CaptureParameters.class.getDeclaredField("filmProperties");
                 f.setAccessible(true);
