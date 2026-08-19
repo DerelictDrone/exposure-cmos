@@ -14,8 +14,8 @@ public class Config {
 			ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 			{
 				builder.push("cmos_camera");
-				CMOS_CAMERA_COOLDOWN = builder.comment("Default CMOS Camera cooldown in seconds","Default: 10")
-				.defineInRange("cmos_camera_cooldown",10,0,Double.MAX_VALUE);
+				CMOS_CAMERA_COOLDOWN = builder.comment("Default CMOS Camera cooldown in ticks","Default: 100")
+				.defineInRange("cmos_camera_cooldown",100,0,Double.MAX_VALUE);
 				CMOS_CAMERA_DO_COOLDOWN_MODIFIERS = builder.comment("Enables or disables scaling the above cooldown.","Default: true")
 				.define("cmos_camera_do_cooldown_modifiers",true);
 				COOLDOWN_RESOLUTION = builder.comment("Scale cooldown by (resolution^2)/(cooldown_resolution^2), set to 0 to disable","Default: 128")
