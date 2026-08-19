@@ -32,9 +32,6 @@ import io.github.mortuusars.exposure.world.level.storage.ExposureIdentifier;
 
 
 import io.github.mortuusars.exposure.world.camera.component.*;
-// import io.github.mortuusars.exposure.world.camera.component.FlashMode;
-// import io.github.mortuusars.exposure.world.camera.component.FocalRange;
-// import io.github.mortuusars.exposure.world.camera.component.ShutterSpeed;
 import io.github.mortuusars.exposure.world.entity.CameraOperator;
 import io.github.mortuusars.exposure.world.entity.CameraStandEntity;
 import io.github.mortuusars.exposure.world.item.camera.CameraItem;
@@ -391,11 +388,7 @@ public class StandControllerPeripheral implements IPeripheral {
             if (type != null) {
                 ObjectLuaTable exposureType = new ObjectLuaTable((Map<Object,Object>)type);
                 Object name = exposureType.get("name");
-                // Object imageColor = exposureType.get("imageColor");
-                // Object filmColor = exposureType.get("filmColor");
                 final String newName;
-                // Color newImageColor = curExposureType.getImageColor();
-                // FilmColor newFilmColor = curExposureType.getFilmColor();
                 if(name != null) {
                     if(!(name instanceof String)) {
                         throw(new LuaException("name is declared in exposureType of new film properties but is not a string."));
@@ -404,39 +397,6 @@ public class StandControllerPeripheral implements IPeripheral {
                 } else {
                      newName = curExposureType.getSerializedName();
                 }
-                // I went through all this effort just to find out that these two are enums
-
-                // if(imageColor != null) {
-                //     if(!(imageColor instanceof Map<?,?>)) {
-                //         throw(new LuaException("imageColor is declared in exposureType of new film properties but is not an argb table."));
-                //     }
-                //     ObjectLuaTable imageColorTable = new ObjectLuaTable((Map<Object,Object>)imageColor);
-                //     try {
-                //     newImageColor = new Color(
-                //         ((Double)imageColorTable.get("a")).intValue(),
-                //         ((Double)imageColorTable.get("r")).intValue(),
-                //         ((Double)imageColorTable.get("g")).intValue(),
-                //         ((Double)imageColorTable.get("b")).intValue());
-                //     } catch(Exception e) {
-                //         throw(new LuaException("imageColor is declared in exposureType of new film properties but is not an argb table."));
-                //     };
-                // }
-                // if(filmColor != null) {
-                //     if(!(filmColor instanceof Map<?,?>)) {
-                //         throw(new LuaException("filmColor is declared in exposureType of new film properties but is not an rgba table."));
-                //     }
-                //     ObjectLuaTable filmColorTable = new ObjectLuaTable((Map<Object,Object>)filmColor);
-                //     try {
-                //     newFilmColor = new FilmColor(
-                //         ((Double)filmColorTable.get("r")).intValue(),
-                //         ((Double)filmColorTable.get("g")).intValue(),
-                //         ((Double)filmColorTable.get("b")).intValue(),
-                //         ((Double)filmColorTable.get("a")).intValue());
-                //     } catch(Exception e) {
-                //         throw(new LuaException("filmColor is declared in exposureType of new film properties but is not an rgba table."));
-                //     };
-                // }
-                
                 // in the event someone or something adds a new film type rather than just using a switchy case here
                 ExposureType newExposureType = Arrays.stream(ExposureType.values()).filter(d -> d.getSerializedName().equalsIgnoreCase(newName)).findAny().orElse(ExposureType.COLOR);
                 fp = fp.withType(newExposureType);
@@ -469,7 +429,6 @@ public class StandControllerPeripheral implements IPeripheral {
                     if (!(cur instanceof Map)) {
                         throw(new LuaException("levels is declared in new filmStyle but is not a table"));
                     }
-                    // back to reflection hell...
                     ObjectLuaTable levels = new ObjectLuaTable((Map<Object,Object>)cur);
                     Levels curLevels;
                     try {
@@ -716,18 +675,6 @@ public class StandControllerPeripheral implements IPeripheral {
             }
 
             cam.setFilmProperties(stack,fp);
-            // size (optional int)
-
-            // colorPalette (resource key, this is a non fucking starter un fucking fortunately)
-
-            // dither mode (string)
-
-            // style (go deeper)
-            // Float contrast
-            // Levels levels
-            // HSB hsb
-            // ColorBalance colorBalance
-            // Float noise
             return true;
         }
             return false;
@@ -760,21 +707,6 @@ public class StandControllerPeripheral implements IPeripheral {
                 retvalue.put("etype_err",e.toString());
             };
 
-            // size (optional int)
-            
-            // update: forge lets you do a thing where you can register a new registry so maybe
-            // just maybe I can network colorPalettes
-            
-            // colorPalette (resource key, this is a non fucking starter un fucking fortunately)
-
-            // dither mode (string)
-
-            // style (go deeper)
-            // Float contrast
-            // Levels levels
-            // HSB hsb
-            // ColorBalance colorBalance
-            // Float noise
             retvalue.put("size",fp.getSize());
             try {
                 {
