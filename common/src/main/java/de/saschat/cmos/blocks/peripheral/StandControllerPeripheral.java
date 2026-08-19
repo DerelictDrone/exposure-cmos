@@ -418,9 +418,18 @@ public class StandControllerPeripheral implements IPeripheral {
             } catch(Exception e) {
                 curFilmStyle = null;
             }
+            DitherMode curDitherMode;
+            try {
+                Field f = FilmProperties.class.getDeclaredField("ditherMode");
+                f.setAccessible(true);
+                curDitherMode = (DitherMode)f.get(fp);
+            } catch(Exception e) {
+                curDitherMode = null;
+            }
             Object type = newFilmProperties.get("exposureType");
             Object size = newFilmProperties.get("size");
             Object colorPalette = newFilmProperties.get("colorPalette");
+            Object ditherMode = newFilmProperties.get("ditherMode");
             Object style = newFilmProperties.get("filmStyle");
 
             if (size != null) {
@@ -434,6 +443,20 @@ public class StandControllerPeripheral implements IPeripheral {
                     throw(new LuaException("colorPalette is declared in new film properties but is not a string."));
                 }
                 fp = fp.withColorPalette(ResourceKey.create(Exposure.Registries.COLOR_PALETTE, ResourceLocation.parse((String)colorPalette)));
+            }
+            if (ditherMode != null) {
+                final String newDitherMode;
+                if(ditherMode != null) {
+                    if(!(ditherMode instanceof String)) {
+                        throw(new LuaException("ditherMode is declared in new film properties but is not a string."));
+                    }
+                    newDitherMode = (String)ditherMode;
+                } else {
+                     newDitherMode = curDitherMode.getSerializedName();
+                }
+                // in the event someone or something adds dither mode rather than just using a switchy case here
+                DitherMode finalDitherMode = Arrays.stream(DitherMode.values()).filter(d -> d.getSerializedName().equalsIgnoreCase(newDitherMode)).findAny().orElse(DitherMode.CLEAN);
+                fp = fp.withDitherMode(finalDitherMode);
             }
             if (type != null) {
                 ObjectLuaTable exposureType = new ObjectLuaTable((Map<Object,Object>)type);
