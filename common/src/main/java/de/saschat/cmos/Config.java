@@ -19,7 +19,7 @@ public class Config {
 				CMOS_CAMERA_DO_COOLDOWN_MODIFIERS = builder.comment("Enables or disables scaling the above cooldown."," Default: true")
 				.define("cmos_camera_do_cooldown_modifiers",true);
 				COOLDOWN_RESOLUTION = builder.comment("Scale cooldown by (resolution^2)/(cooldown_resolution^2), set to 0 to disable")
-				.defineInRange("cooldown_resolution",128,0,4096);
+				.defineInRange("cooldown_resolution",128,0,2048);
 				COOLDOWN_BW = builder.comment("Scale cooldown by this scalar if image is in black and white, set to 1 to disable")
 				.defineInRange("cooldown_bw",0.5,0,Double.MAX_VALUE);
 				COOLDOWN_SILENT = builder.comment("Scale cooldown by this scalar if camera/camera stand is set as silent, set to 1 to disable")
